@@ -69,6 +69,7 @@ int main(int argc, char **argv)
 		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 		for (i = 0; i < nsats; i++)
 			locate_sat(sats + i, theta);
+		minlat = 0.0;
 		if (show_zones)
 			shade_zones(screen, nsats, sats, calculate_range(range), &minlat);
 		draw_markers(screen, nsats, sats);
@@ -89,9 +90,9 @@ int main(int argc, char **argv)
 						running = !running;
 					else if (key.sym == SDLK_z)
 						show_zones = !show_zones;
-					else if (key.sym == SDLK_m)
+					else if (key.sym == SDLK_m) {
 						printf("min. lat.: %4.2f\n", minlat * 90.0);
-					else if (key.sym == SDLK_UP) {
+					} else if (key.sym == SDLK_UP) {
 						inc += 0.4;
 						for (i = 0; i < 3; i++)
 							orbits[i].inc = inc / 90.0;
