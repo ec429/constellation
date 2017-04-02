@@ -5,6 +5,8 @@ void draw_orbits(SDL_Surface *s, unsigned int norbits, struct orbit *orbits);
 void draw_markers(SDL_Surface *s, unsigned int nsats, struct sat *sats, double r);
 void shade_zones(SDL_Surface *s, unsigned int nsats, struct sat *sats, double r);
 
+#define NSATS 12
+
 int main(void)
 {
 	SDL_Surface *screen = ginit(640, 320);
@@ -21,19 +23,19 @@ int main(void)
 		{ .inc = inc, .phi_by_tau = 2/3.0, .rgb = BLUE },
 	};
 
-	struct sat sats[12];
+	struct sat sats[NSATS];
 
-	for (i = 0; i < 12; i++) {
+	for (i = 0; i < NSATS; i++) {
 		sats[i].orbit = orbits + (i % 3);
-		sats[i].theta_by_tau = (i / 3) / 4.0;
+		sats[i].theta_by_tau = i / 4.0;
 	}
 
 	while(!errupt) {
 		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
-		for (i = 0; i < 12; i++)
+		for (i = 0; i < NSATS; i++)
 			locate_sat(sats + i, theta);
-		shade_zones(screen, 12, sats, r);
-		draw_markers(screen, 12, sats, r);
+		shade_zones(screen, NSATS, sats, r);
+		draw_markers(screen, NSATS, sats, r);
 		draw_orbits(screen, 3, orbits);
 		SDL_Flip(screen);
 		SDL_Event event;
