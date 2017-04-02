@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 	}
 	for (i = 0; i < nsats; i++) {
 		sats[i].orbit = orbits + (i % 3);
-		sats[i].theta_by_tau = (i / 3) / (nsats / 3.0) - (i % 3) / 3.0;
+		sats[i].theta_by_tau = (i / 3) / ceil(nsats / 3.0) - (i % 3) / 3.0;
 	}
 
 	screen = ginit(480, 240);
