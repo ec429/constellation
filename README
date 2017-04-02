@@ -1,0 +1,35 @@
+Satellite Constellation Visualisation
+
+Usage:
+	./test -n<num>
+ where <num> is the number of satellites.
+
+Currently only has one constellation design, with three equally-spaced orbital
+ planes, and mean anomalies suited to an even number of sats per plane.  (If
+ you want to model a different design, change the code!)
+With n = 6, all sats share a common plane, which rotates twice per orbit.
+With n = 12, there are two such planes, 180° apart.
+
+Sat visibility is based on an orbital altitude of 4170km, chosen because it
+ gives an orbital period of 10770.5s, one eighth of a sidereal day.
+
+The range calculation is based on the root model and assumes a base sat range
+ of 12Mm.  So, for a target range of r km, the effective range in km is
+	r + sqrt(12000 * r)
+This assumes r < 12000, as the root model is properly
+	min(r + R) + sqrt(rR)
+ but in practice if r > 12000 then we will be horizon-limited anyway.
+
+Keys:
+ r	Toggle [r]unning animation
+ z	Toggle display of coverage [z]ones
+ m	Write [m]inimum latitude without coverage to stdout.  Requires coverage
+	 zones to be enabled.
+ 0	Reset time to t = 0.
+ -/+	Decrease/increase target range.  Writes new range and effective range
+	 to stdout.  Step is 1000km (or 100km if Ctrl held).
+ left/right cursor keys
+	Step time back/forwards
+ down/up cursor keys
+	Decrease/increase orbital inclination, in 0.4° steps.
+ q	Quit.
