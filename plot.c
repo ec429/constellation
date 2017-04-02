@@ -50,7 +50,7 @@ void plot_orbit(SDL_Surface *s, struct orbit *orbit)
 		double x = bogosat.loc_s.phi / (M_PI * 2.0);
 		if (x < 0.0)
 			x += 1.0;
-		double y = bogosat.loc_s.theta * 2.0 / M_PI - 1;
+		double y = bogosat.loc_s.theta * 2.0 / M_PI;
 		double sx = x * s->w;
 		double sy = (1.0 - y) * s->h / 2.0;
 		pset(s, sx, sy, orbit->rgb);
@@ -73,7 +73,7 @@ void plot_location(SDL_Surface *s, struct sv3 loc, const unsigned char *rgb)
 	double x = loc.phi / (M_PI * 2.0);
 	if (x < 0.0)
 		x += 1.0;
-	double y = loc.theta * 2.0 / M_PI - 1;
+	double y = loc.theta * 2.0 / M_PI;
 	double sx = x * s->w;
 	double sy = (1.0 - y) * s->h / 2.0;
 	int dx, dy;
