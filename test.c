@@ -1,8 +1,6 @@
 #include "plot.h"
 #include <stdbool.h>
 
-#define INC	0.8
-
 void draw_orbits(SDL_Surface *s, unsigned int norbits, struct orbit *orbits);
 void draw_markers(SDL_Surface *s, unsigned int nsats, struct sat *sats, double r);
 void shade_zones(SDL_Surface *s, unsigned int nsats, struct sat *sats, double r);
@@ -12,14 +10,15 @@ int main(void)
 	SDL_Surface *screen = ginit(640, 320);
 	bool running = false;
 	double theta = 0;
+	double inc = 0.8;
 	double r = 100;
 	int errupt = 0;
 	int i;
 
 	struct orbit orbits[3] = {
-		{ .inc = INC, .phi_by_tau = 0,     .rgb = RED },
-		{ .inc = INC, .phi_by_tau = 1/3.0, .rgb = GREEN },
-		{ .inc = INC, .phi_by_tau = 2/3.0, .rgb = BLUE },
+		{ .inc = inc, .phi_by_tau = 0,     .rgb = RED },
+		{ .inc = inc, .phi_by_tau = 1/3.0, .rgb = GREEN },
+		{ .inc = inc, .phi_by_tau = 2/3.0, .rgb = BLUE },
 	};
 
 	struct sat sats[12];
@@ -51,7 +50,15 @@ int main(void)
 						errupt++;
 					else if (key.sym == SDLK_r)
 						running = !running;
-					else if (key.sym == SDLK_RIGHT)
+					else if (key.sym == SDLK_UP) {
+						inc += 0.04;
+						for (i = 0; i < 3; i++)
+							orbits[i].inc = inc;
+					} else if (key.sym == SDLK_DOWN) {
+						inc -= 0.04;
+						for (i = 0; i < 3; i++)
+							orbits[i].inc = inc;
+					} else if (key.sym == SDLK_RIGHT)
 						theta += 1/96.0;
 					else if (key.sym == SDLK_LEFT)
 						theta += 1 - 1/96.0;
