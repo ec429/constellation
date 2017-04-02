@@ -8,7 +8,7 @@ void draw_markers(SDL_Surface *s, unsigned int nsats, struct sat *sats);
 void shade_zones(SDL_Surface *s, unsigned int nsats, struct sat *sats, double range, double *minlat);
 double calculate_range(double range);
 
-#define NSATS 12
+#define NSATS	12
 #define EARTH_RADIUS	6371
 #define SAT_RANGE	12000
 #define min(x, y)	((x) < (y) ? (x) : (y))
@@ -18,7 +18,7 @@ int main(void)
 	SDL_Surface *screen = ginit(480, 240);
 	bool running = false;
 	bool show_zones = true;
-	double range = 4000.0;
+	double range = 2000.0;
 	double theta = 0;
 	double inc = 28.6; // Cape latitude
 	double minlat = 0;
@@ -44,7 +44,7 @@ int main(void)
 
 	for (i = 0; i < NSATS; i++) {
 		sats[i].orbit = orbits + (i % 3);
-		sats[i].theta_by_tau = i / 4.0;
+		sats[i].theta_by_tau = (i / 3) / (NSATS / 3.0) - (i % 3) / 3.0;
 	}
 
 	while(!errupt) {
@@ -53,7 +53,6 @@ int main(void)
 			locate_sat(sats + i, theta);
 		if (show_zones)
 			shade_zones(screen, NSATS, sats, calculate_range(range), &minlat);
-		printf("min. lat.: %4.2f\n", minlat * 90.0);
 		draw_markers(screen, NSATS, sats);
 		draw_orbits(screen, 3, orbits);
 		SDL_Flip(screen);
@@ -73,6 +72,8 @@ int main(void)
 						running = !running;
 					else if (key.sym == SDLK_z)
 						show_zones = !show_zones;
+					else if (key.sym == SDLK_m)
+						printf("min. lat.: %4.2f\n", minlat * 90.0);
 					else if (key.sym == SDLK_UP) {
 						inc += 0.4;
 						for (i = 0; i < 3; i++)
