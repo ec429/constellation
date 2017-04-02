@@ -15,12 +15,12 @@ double calculate_range(double range);
 
 int main(int argc, char **argv)
 {
-	SDL_Surface *screen = ginit(480, 240);
 	unsigned int nsats = 12, i;
 	struct orbit orbits[3] = {{.rgb = RED}, {.rgb = GREEN}, {.rgb = BLUE}};
 	bool show_zones = true;
 	double range = 2000.0;
 	bool running = false;
+	SDL_Surface *screen;
 	double inc = 28.6; /* Cape latitude */
 	double minlat = 0;
 	double theta = 0;
@@ -62,6 +62,9 @@ int main(int argc, char **argv)
 		sats[i].theta_by_tau = (i / 3) / (nsats / 3.0) - (i % 3) / 3.0;
 	}
 
+	screen = ginit(480, 240);
+	if (!screen)
+		return 1;
 	while (!errupt) {
 		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 		for (i = 0; i < nsats; i++)
