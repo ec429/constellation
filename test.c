@@ -1,6 +1,7 @@
 #include "plot.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include <math.h>
 
 void draw_orbits(SDL_Surface *s, unsigned int norbits, struct orbit *orbits);
@@ -8,55 +9,68 @@ void draw_markers(SDL_Surface *s, unsigned int nsats, struct sat *sats);
 void shade_zones(SDL_Surface *s, unsigned int nsats, struct sat *sats, double range, double *minlat);
 double calculate_range(double range);
 
-#define NSATS	12
 #define EARTH_RADIUS	6371
 #define SAT_RANGE	12000
 #define min(x, y)	((x) < (y) ? (x) : (y))
 
-int main(void)
+int main(int argc, char **argv)
 {
 	SDL_Surface *screen = ginit(480, 240);
-	bool running = false;
+	unsigned int nsats = 12, i;
+	struct orbit orbits[3] = {{.rgb = RED}, {.rgb = GREEN}, {.rgb = BLUE}};
 	bool show_zones = true;
 	double range = 2000.0;
-	double theta = 0;
-	double inc = 28.6; // Cape latitude
+	bool running = false;
+	double inc = 28.6; /* Cape latitude */
 	double minlat = 0;
+	double theta = 0;
+	struct sat *sats;
+	SDL_Event event;
 	int errupt = 0;
-	int i;
+	int arg;
 
-	struct orbit orbits[3] = {
-		{ .radius = EARTH_RADIUS + 4170.0,
-		  .inc = inc / 90.0,
-		  .phi_by_tau = 0,
-		  .rgb = RED },
-		{ .radius = EARTH_RADIUS + 4170.0,
-		  .inc = inc / 90.0,
-		  .phi_by_tau = 1/3.0,
-		  .rgb = GREEN },
-		{ .radius = EARTH_RADIUS + 4170.0,
-		  .inc = inc / 90.0,
-		  .phi_by_tau = 2/3.0,
-		  .rgb = BLUE },
-	};
-
-	struct sat sats[NSATS];
-
-	for (i = 0; i < NSATS; i++) {
-		sats[i].orbit = orbits + (i % 3);
-		sats[i].theta_by_tau = (i / 3) / (NSATS / 3.0) - (i % 3) / 3.0;
+	/* Parse args */
+	for (arg = 1; arg < argc; arg++) {
+		if (!strncmp(argv[arg], "-n", 2)) {
+			if (sscanf(argv[arg] + 2, "%u", &nsats) != 1) {
+				fprintf(stderr, "Bad -n value '%s'\n",
+					argv[arg] + 2);
+				return 1;
+			}
+		} else {
+			fprintf(stderr, "Unrecognised argument '%s'\n",
+				argv[arg]);
+			return 1;
+		}
 	}
 
-	while(!errupt) {
+	/* Define orbits */
+	for (i = 0; i < 3; i++) {
+		orbits[i].radius = EARTH_RADIUS + 4170.0;
+		orbits[i].inc = inc / 90.0;
+		orbits[i].phi_by_tau = i / 3.0;
+	}
+
+	/* Define sats */
+	sats = calloc(nsats, sizeof(struct sat));
+	if (!sats) {
+		perror("calloc");
+		return 1;
+	}
+	for (i = 0; i < nsats; i++) {
+		sats[i].orbit = orbits + (i % 3);
+		sats[i].theta_by_tau = (i / 3) / (nsats / 3.0) - (i % 3) / 3.0;
+	}
+
+	while (!errupt) {
 		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
-		for (i = 0; i < NSATS; i++)
+		for (i = 0; i < nsats; i++)
 			locate_sat(sats + i, theta);
 		if (show_zones)
-			shade_zones(screen, NSATS, sats, calculate_range(range), &minlat);
-		draw_markers(screen, NSATS, sats);
+			shade_zones(screen, nsats, sats, calculate_range(range), &minlat);
+		draw_markers(screen, nsats, sats);
 		draw_orbits(screen, 3, orbits);
 		SDL_Flip(screen);
-		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
 			switch(event.type) {
 			case SDL_QUIT:

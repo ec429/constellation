@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Wall -Wextra -Werror -pedantic --std=gnu99 -g
+CFLAGS := -Wall -Wextra -Werror -Wdeclaration-after-statement -pedantic --std=c99 -g
 
 SDL := $$(sdl-config --libs)
 SDLFLAGS := $$(sdl-config --cflags)

@@ -43,16 +43,17 @@ void pset(SDL_Surface *s, int x, int y, const unsigned char *rgb)
 void plot_orbit(SDL_Surface *s, struct orbit *orbit)
 {
 	struct sat bogosat = {.orbit = orbit, .theta_by_tau = 0};
+	double x, y, sx, sy;
 	int i;
 
 	for (i = 0; i < ORBIT_POINTS; i++) {
 		locate_sat(&bogosat, i / (double)ORBIT_POINTS);
-		double x = bogosat.loc_s.phi / (M_PI * 2.0);
+		x = bogosat.loc_s.phi / (M_PI * 2.0);
 		if (x < 0.0)
 			x += 1.0;
-		double y = bogosat.loc_s.theta * 2.0 / M_PI;
-		double sx = x * s->w;
-		double sy = (1.0 - y) * s->h / 2.0;
+		y = bogosat.loc_s.theta * 2.0 / M_PI;
+		sx = x * s->w;
+		sy = (1.0 - y) * s->h / 2.0;
 		pset(s, sx, sy, orbit->rgb);
 	}
 }
@@ -71,12 +72,14 @@ void locate_sat(struct sat *sat, double theta_offset_by_tau)
 void plot_location(SDL_Surface *s, struct sv3 loc, const unsigned char *rgb)
 {
 	double x = loc.phi / (M_PI * 2.0);
+	double y = loc.theta * 2.0 / M_PI;
+	double sx, sy;
+	int dx, dy;
+
 	if (x < 0.0)
 		x += 1.0;
-	double y = loc.theta * 2.0 / M_PI;
-	double sx = x * s->w;
-	double sy = (1.0 - y) * s->h / 2.0;
-	int dx, dy;
+	sx = x * s->w;
+	sy = (1.0 - y) * s->h / 2.0;
 
 	for (dy = -2; dy < 3; dy++)
 		for (dx = -2; dx < 3; dx++)
