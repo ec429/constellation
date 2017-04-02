@@ -38,62 +38,47 @@ void pset(SDL_Surface *s, int x, int y, const unsigned char *rgb)
 	return;
 }
 
-void plot_sine(SDL_Surface *s, double a, double phi, const unsigned char *rgb)
-{
-	int x;
-
-	if (!s) return;
-	for (x = 0; x < s->w; x++) {
-		double w = x * 2.0 * M_PI / s->w;
-		double y = (1.0 - a * sin(w - phi)) * s->h / 2.0;
-
-		pset(s, x, y + 0.5, rgb);
-	}
-}
-
-void plot_sine_frac(SDL_Surface *s, double a, double phi_by_tau, const unsigned char *rgb)
-{
-	plot_sine(s, a, phi_by_tau * 2.0 * M_PI, rgb);
-}
-
-void plot_marker(SDL_Surface *s, double a, double phi, double theta, double r, const unsigned char *rgb)
-{
-	double x = fmod(theta / M_PI / 2.0 + 1, 1.0);
-	double y = a * sin(phi + theta);
-	plot_location(s, x, y, r, rgb);
-}
-
-
-void plot_marker_frac(SDL_Surface *s, double a, double phi_by_tau, double theta_by_tau, double r, const unsigned char *rgb)
-{
-	plot_marker(s, a, phi_by_tau * M_PI * 2.0, theta_by_tau * M_PI * 2.0, r, rgb);
-}
+#define ORBIT_POINTS	240
 
 void plot_orbit(SDL_Surface *s, struct orbit *orbit)
 {
-	plot_sine_frac(s, orbit->inc, orbit->phi_by_tau, orbit->rgb);
+	struct sat bogosat = {.orbit = orbit, .theta_by_tau = 0};
+	int i;
+
+	for (i = 0; i < ORBIT_POINTS; i++) {
+		locate_sat(&bogosat, i / (double)ORBIT_POINTS);
+		double x = bogosat.loc_s.phi / (M_PI * 2.0);
+		if (x < 0.0)
+			x += 1.0;
+		double y = bogosat.loc_s.theta * 2.0 / M_PI - 1;
+		double sx = x * s->w;
+		double sy = (1.0 - y) * s->h / 2.0;
+		pset(s, sx, sy, orbit->rgb);
+	}
 }
 
 void locate_sat(struct sat *sat, double theta_offset_by_tau)
 {
 	double theta_by_tau = sat->theta_by_tau + theta_offset_by_tau;
-	sat->x = fmod(theta_by_tau + sat->orbit->phi_by_tau + 1, 1.0);
-	sat->y = sat->orbit->inc * sin(theta_by_tau * M_PI * 2.0);
+	struct rv3 pos = {sat->orbit->radius, 0, 0};
+
+	pos = rotate_z(pos, -theta_by_tau * M_PI * 2.0);
+	pos = rotate_y(pos, sat->orbit->inc * M_PI / 2.0);
+	sat->loc_r = rotate_z(pos, (sat->orbit->phi_by_tau - 0.25) * M_PI * 2.0);
+	sat->loc_s = sv3_from_rv3(sat->loc_r);
 }
 
-void plot_location(SDL_Surface *s, double x, double y, double r, const unsigned char *rgb)
+void plot_location(SDL_Surface *s, struct sv3 loc, const unsigned char *rgb)
 {
+	double x = loc.phi / (M_PI * 2.0);
+	if (x < 0.0)
+		x += 1.0;
+	double y = loc.theta * 2.0 / M_PI - 1;
 	double sx = x * s->w;
 	double sy = (1.0 - y) * s->h / 2.0;
-	int dx, dy, dt;
+	int dx, dy;
 
 	for (dy = -2; dy < 3; dy++)
 		for (dx = -2; dx < 3; dx++)
 			pset(s, sx + dx, sy + dy, rgb);
-
-	for (dt = 0; dt < 72; dt++) {
-		double dx = r * cos(dt * M_PI / 36.0);
-		double dy = r * sin(dt * M_PI / 36.0);
-		pset(s, sx + dx, sy + dy, rgb);
-	}
 }

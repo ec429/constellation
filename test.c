@@ -1,8 +1,10 @@
 #include "plot.h"
+#include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 
 void draw_orbits(SDL_Surface *s, unsigned int norbits, struct orbit *orbits);
-void draw_markers(SDL_Surface *s, unsigned int nsats, struct sat *sats, double r);
+void draw_markers(SDL_Surface *s, unsigned int nsats, struct sat *sats);
 void shade_zones(SDL_Surface *s, unsigned int nsats, struct sat *sats, double r);
 
 #define NSATS 12
@@ -18,9 +20,9 @@ int main(void)
 	int i;
 
 	struct orbit orbits[3] = {
-		{ .inc = inc, .phi_by_tau = 0,     .rgb = RED },
-		{ .inc = inc, .phi_by_tau = 1/3.0, .rgb = GREEN },
-		{ .inc = inc, .phi_by_tau = 2/3.0, .rgb = BLUE },
+		{ .radius = 1, .inc = inc, .phi_by_tau = 0,     .rgb = RED },
+		{ .radius = 1, .inc = inc, .phi_by_tau = 1/3.0, .rgb = GREEN },
+		{ .radius = 1, .inc = inc, .phi_by_tau = 2/3.0, .rgb = BLUE },
 	};
 
 	struct sat sats[NSATS];
@@ -34,8 +36,8 @@ int main(void)
 		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 		for (i = 0; i < NSATS; i++)
 			locate_sat(sats + i, theta);
-		shade_zones(screen, NSATS, sats, r);
-		draw_markers(screen, NSATS, sats, r);
+		//shade_zones(screen, NSATS, sats, r);
+		draw_markers(screen, NSATS, sats);
 		draw_orbits(screen, 3, orbits);
 		SDL_Flip(screen);
 		SDL_Event event;
@@ -89,12 +91,12 @@ void draw_orbits(SDL_Surface *s, unsigned int norbits, struct orbit *orbits)
 		plot_orbit(s, orbits + i);
 }
 
-void draw_markers(SDL_Surface *s, unsigned int nsats, struct sat *sats, double r)
+void draw_markers(SDL_Surface *s, unsigned int nsats, struct sat *sats)
 {
 	unsigned int i;
 
 	for (i = 0; i < nsats; i++)
-		plot_location(s, sats[i].x, sats[i].y, r, sats[i].orbit->rgb);
+		plot_location(s, sats[i].loc_s, sats[i].orbit->rgb);
 }
 
 void shade_zones(SDL_Surface *s, unsigned int nsats, struct sat *sats, double r)
@@ -109,8 +111,8 @@ void shade_zones(SDL_Surface *s, unsigned int nsats, struct sat *sats, double r)
 			unsigned int i;
 
 			for (i = 0; i < nsats; i++) {
-				double dx = sats[i].x - px;
-				double dy = sats[i].y - py;
+				double dx = sats[i].loc_s.phi - px;
+				double dy = sats[i].loc_s.theta - py;
 
 				if (dx > 0.5)
 					dx -= 1.0;
